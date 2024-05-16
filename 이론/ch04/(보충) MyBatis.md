@@ -7,52 +7,15 @@ public class BoardVO {
 	private String writerName;
 	private String title;
 	private String content;
-	
-	public BoardVO() {}
 
-	public BoardVO(int no, String writerName, String title, String content) {
-		this.no = no;
-		this.writerName = writerName;
-		this.title = title;
-		this.content = content;
-	}
+	//constructor
+	...
 
-	public int getNo() {
-		return no;
-	}
+	//getter/setter
+	...
 
-	public void setNo(int no) {
-		this.no = no;
-	}
-
-	public String getWriterName() {
-		return writerName;
-	}
-
-	public void setWriterName(String writerName) {
-		this.writerName = writerName;
-	}
-
-	public String getTitle() {
-		return title;
-	}
-
-	public void setTitle(String title) {
-		this.title = title;
-	}
-
-	public String getContent() {
-		return content;
-	}
-
-	public void setContent(String content) {
-		this.content = content;
-	}
-
-	@Override
-	public String toString() {
-		return "BoardVO [no=" + no + ", writerName=" + writerName + ", title=" + title + ", content=" + content + "]";
-	}	
+	//toString()
+	...
 }
 ```
 ***
@@ -101,21 +64,24 @@ MyBatis 매퍼 파일이 특정한 형식을 따라야 한다는 것을 정의�
 SQL 문장에 따라 \<select>, \<insert>, \<update>, \<delete> 를 사용한다.
 - id: 메서드 이름
 - resultType: SQL 쿼리의 결과를 매핑할 Java 타입을 지정
-- parameterType: SQL 쿼리에 전달되는 입력 파라미터의 타입을 지정
-- #{}: 파라미터 객체의 getter 메서드를 호출하여 값을 가져온다. 기본 타입일 경우, 해당 파라미터를 직접 사용하여 SQL 쿼리에 값을 바인딩한다.
+- parameterType: SQL 쿼리에 전달되는 입력 파라미터의 타입을 지정(1개일 경우 생략 가능)
+- #{ }: 파라미터 객체의 getter 메서드를 호출하여 값을 가져온다. 기본 타입일 경우, 해당 파라미터를 직접 사용하여 SQL 쿼리에 값을 바인딩한다.
 
-resultType과 parameterType은 'java.lang.Integer'와 같이 풀네임으로 작성하는 것이 원칙이나 'int'도 가능하다. (String, map 등 alias가 등록된 것들도 있다.)
+resultType과 parameterType은 '패키지명.클래스명'과 같이 작성하는 것이 원칙이나 등록된 alias로 사용 가능하다.
+> https://mybatis.org/mybatis-3/ko/configuration.html#typeAliases
+
 ***
 ## return 타입이 Map 이라면?
+#### Mapper 인터페이스
+```java
+public HashMap<String, Object> getBoardByNo(int no);
+```
+#### Mapper XML
 ```xml
 <select id="getBoardByNo" resultType="java.util.HashMap" parameterType="int">
   select no as bno, writerName, title, content from board
   where no = #{no}
 </select>
-```
-#### Mapper 인터페이스
-```java
-public HashMap<String, Object> getBoardByNo(int no);
 ```
 #### 테스트
 ```java
@@ -138,15 +104,16 @@ null
 - alias 값도 적용된다.
 - 오라클에서 컬럼명은 모두 알파벳 대문자로 저장된다. 따라서, 키 값 역시 대문자로 저장된다. → 대문자로 조회하지 않으면 null 값 반환
 ## list 안의 map
+#### Mapper 인터페이스
+```
+public ArrayList<HashMap<String, Object>> getBoardList();
+```
+#### Mapper XML
 ```xml
 <select id="getBoardList" resultType="java.util.HashMap">
   select * from board
   where no between 1 and 5
 </select>
-```
-#### Mapper 인터페이스
-```
-public ArrayList<HashMap<String, Object>> getBoardList();
 ```
 #### 테스트
 ```java
@@ -158,4 +125,30 @@ public void testGetBoardList() {
 ```
 ```
 [{NO=1, WRITERNAME=작성자1, TITLE=제목1, CONTENT=내용1}, ..., {NO=5, WRITERNAME=작성자5, TITLE=제목5, CONTENT=내용5}]
+```
+***
+## 파라미터가 2개 이상이라면?
+@Param("이름")을 통해서 parameter를 전달받는다.
+#### Mapper 인터페이스
+```java
+public ArrayList<HashMap<String, Object>> getBoardList2(@Param("sNo") int startNo, @Param("eNo") int endNo);
+```
+#### Mapper XML
+```java
+<select id="getBoardList2" resultType="java.util.HashMap" parameterType="int">
+	select *
+	from board
+	where no between #{sNo} and #{eNo}
+</select>
+```
+#### 테스트
+```java
+@Test
+public void testGetBoardList2() {
+	List<HashMap<String, Object>> boardList = testMapper.getBoardList2(5, 10);
+	System.out.println(boardList);
+}
+```
+```
+[{NO=5, WRITERNAME=작성자5, TITLE=제목5, CONTENT=내용5}, ..., {NO=10, WRITERNAME=작성자10, TITLE=제목10, CONTENT=내용10}]
 ```
