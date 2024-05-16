@@ -70,6 +70,29 @@ SQL 문장에 따라 \<select>, \<insert>, \<update>, \<delete> 를 사용한다
 resultType과 parameterType은 '패키지명.클래스명'과 같이 작성하는 것이 원칙이나 등록된 alias로 사용 가능하다.
 > https://mybatis.org/mybatis-3/ko/configuration.html#typeAliases
 
+alias를 직접 등록하여 사용할 수도 있다.
+#### 설정 파일 - mybatis-config.xml
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE configuration
+  PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-config.dtd">
+
+<configuration>
+	<typeAliases>
+		<typeAlias alias="boardVO" type="com.mycom.board.vo.BoardVO"/>
+	</typeAliases>
+</configuration>
+```
+com.mycom.board.vo.BoardVO 가 존재하지 않으면 에러가 발생하니 주의하자.
+```java
+<update id="updateBoard" parameterType="boardVO">
+	update board
+	set title=#{title}, content=#{content}
+	where no=#{no}
+</update>
+```
+
 ***
 ## return 타입이 Map 이라면?
 #### Mapper 인터페이스
@@ -152,3 +175,5 @@ public void testGetBoardList2() {
 ```
 [{NO=5, WRITERNAME=작성자5, TITLE=제목5, CONTENT=내용5}, ..., {NO=10, WRITERNAME=작성자10, TITLE=제목10, CONTENT=내용10}]
 ```
+## 파라미터의 타입이 다른 경우
+xml에서 parameterType을 map으로 작성한다.
